@@ -40,11 +40,20 @@ export const PromptEditor: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      <section className="rounded border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Step 3 · Prompt editor</h2>
+        <p className="mt-1 text-xs text-slate-400">
+          Everything you add from the left appears here as plain text. Edit it like a normal sentence — add commas, remove words,
+          or write in your own ideas.
+        </p>
+      </section>
       <section className="rounded border border-slate-800 bg-slate-900/70 p-4">
         <header className="mb-2 flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold text-slate-200">Positive Prompt</h2>
-            <p className="text-xs text-slate-400">Drag tags here or type manually.</p>
+            <p className="text-xs text-slate-400">
+              This tells NovelAI what to draw. Drag in tags or type descriptions such as “glowing lanterns, calm night sky”.
+            </p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -78,7 +87,12 @@ export const PromptEditor: React.FC = () => {
 
       <section className="rounded border border-slate-800 bg-slate-900/70 p-4">
         <header className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-200">Negative Prompt</h2>
+          <div>
+            <h2 className="text-sm font-semibold text-slate-200">Negative Prompt</h2>
+            <p className="max-w-xs text-xs text-slate-400">
+              Optional: list things to avoid (for example “blurry, extra limbs”). Leave blank if you are unsure.
+            </p>
+          </div>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => setNegativeInput('')} icon={<FiTrash />}>
               Clear

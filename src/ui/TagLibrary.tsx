@@ -79,7 +79,11 @@ export const TagLibrary: React.FC = () => {
   return (
     <div className="flex h-full flex-col gap-4 overflow-hidden">
       <div>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Tag Library</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Step 1 · Tag Library</h2>
+        <p className="mt-1 text-xs text-slate-400">
+          Search for simple words like “sunset” or “watercolor”. Click any tag to add it to your prompt — think of them as stickers
+          that describe your scene.
+        </p>
         <input
           type="search"
           value={search}
@@ -130,6 +134,9 @@ export const TagLibrary: React.FC = () => {
 
       <div className="rounded border border-slate-800 bg-slate-900/50 p-3">
         <h3 className="text-xs font-semibold uppercase text-slate-400">Add custom tag</h3>
+        <p className="mt-1 text-xs text-slate-500">
+          Don’t see a word you need? Type your own here and save it for later. Separate multiple ideas with commas.
+        </p>
         <div className="mt-2 flex gap-2">
           <input
             value={customLabel}

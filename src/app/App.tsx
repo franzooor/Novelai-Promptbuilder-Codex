@@ -16,6 +16,7 @@ import { buildPayload, sendToNovelAI } from '../core/sendToNAI';
 import { DEFAULT_RANDOM_PROFILES, randomizeFromProfile } from '../core/randomizer';
 import { useHotkeys } from 'react-hotkeys-hook';
 import type { HistoryEntry } from '../types/models';
+import { OnboardingTips } from '../ui/OnboardingTips';
 
 const useInitialization = () => {
   const initializeTags = useTags((state) => state.initialize);
@@ -207,7 +208,7 @@ const AppContent: React.FC = () => {
       <header className="flex items-center justify-between border-b border-slate-800 bg-slate-900/80 px-6 py-3">
         <div>
           <h1 className="text-lg font-semibold">NovelAI Prompt & Character Manager</h1>
-          <p className="text-xs text-slate-400">Compose prompts, manage characters, and automate NovelAI injections.</p>
+          <p className="text-xs text-slate-400">Designed for beginners — follow the guided steps below to build and send prompts.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button icon={<FiSend />} onClick={() => void handleSend()}>
@@ -230,26 +231,31 @@ const AppContent: React.FC = () => {
           </Button>
         </div>
       </header>
-      <main className="flex flex-1 overflow-hidden">
-        <aside className="w-80 border-r border-slate-800 bg-slate-900/60 p-4">
-          <TagLibrary />
-          <div className="mt-4">
-            <CharacterPanel />
-          </div>
-        </aside>
-        <section className="flex flex-1 flex-col overflow-hidden">
-          <div className="grid flex-1 grid-cols-2 gap-4 overflow-hidden p-4">
-            <div className="flex flex-col overflow-hidden">
-              <PromptEditor />
-              <div className="mt-4 overflow-hidden">
-                <HistoryList onReuse={handleReuseHistory} />
+      <main className="flex flex-1 flex-col overflow-hidden">
+        <div className="border-b border-slate-800 bg-slate-950/60 px-6 py-4">
+          <OnboardingTips />
+        </div>
+        <div className="flex flex-1 overflow-hidden">
+          <aside className="w-80 border-r border-slate-800 bg-slate-900/60 p-4">
+            <TagLibrary />
+            <div className="mt-4">
+              <CharacterPanel />
+            </div>
+          </aside>
+          <section className="flex flex-1 flex-col overflow-hidden">
+            <div className="grid flex-1 grid-cols-2 gap-4 overflow-hidden p-4">
+              <div className="flex flex-col overflow-hidden">
+                <PromptEditor />
+                <div className="mt-4 overflow-hidden">
+                  <HistoryList onReuse={handleReuseHistory} />
+                </div>
+              </div>
+              <div className="overflow-y-auto pr-2">
+                <RandomizerPanel />
               </div>
             </div>
-            <div className="overflow-y-auto pr-2">
-              <RandomizerPanel />
-            </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
     </div>
   );

@@ -22,12 +22,15 @@ export const HistoryList: React.FC<HistoryListProps> = ({ onReuse }) => {
 
   return (
     <section className="rounded border border-slate-800 bg-slate-900/70 p-4">
-      <header className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-200">History</h3>
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-200">History</h3>
+          <p className="mt-1 text-xs text-slate-400">Every prompt you send is saved here. Click “Reuse” to bring it back instantly.</p>
+        </div>
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search history"
+          placeholder="Search saved prompts"
           className="w-48 rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 focus:border-accent focus:outline-none"
         />
       </header>

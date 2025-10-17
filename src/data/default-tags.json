@@ -1,0 +1,13 @@
+[
+  { "id": "masterpiece", "label": "masterpiece", "category": "quality" },
+  { "id": "best_quality", "label": "best quality", "category": "quality" },
+  { "id": "highres", "label": "highres", "category": "quality" },
+  { "id": "dramatic_lighting", "label": "dramatic lighting", "category": "lighting" },
+  { "id": "soft_lighting", "label": "soft lighting", "category": "lighting" },
+  { "id": "night", "label": "night", "category": "scene" },
+  { "id": "daylight", "label": "daylight", "category": "scene" },
+  { "id": "dynamic_pose", "label": "dynamic pose", "category": "composition" },
+  { "id": "portrait", "label": "portrait", "category": "composition" },
+  { "id": "anime_style", "label": "anime style", "category": "style" },
+  { "id": "detailed_background", "label": "detailed background", "category": "scene" }
+]

@@ -54,11 +54,18 @@ export const RandomizerPanel: React.FC = () => {
 
   return (
     <div className="grid gap-4">
+      <section className="rounded border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Step 4 · Finishing touches</h2>
+        <p className="mt-1 text-xs text-slate-400">
+          Adjust how NovelAI draws your image. Not sure what to pick? Use the friendly defaults and press “Roll new settings” for
+          a surprise combination.
+        </p>
+      </section>
       <section className="rounded border border-slate-800 bg-slate-900/60 p-4 text-xs">
         <header className="mb-2 flex items-center justify-between text-sm text-slate-200">
-          <span>Settings randomizer</span>
+          <span className="font-medium">Settings randomizer</span>
           <Button variant="secondary" onClick={handleRandomize}>
-            Roll
+            Roll new settings
           </Button>
         </header>
         <label className="flex flex-col gap-1 text-xs text-slate-300">
@@ -156,7 +163,7 @@ export const RandomizerPanel: React.FC = () => {
               checked={autoGenerate}
               onChange={(event) => setAutoGenerate(event.target.checked)}
             />
-            Auto-generate after send
+            Automatically start image generation after sending the prompt
           </label>
           <label className="flex items-center gap-2">
             <input
@@ -164,13 +171,14 @@ export const RandomizerPanel: React.FC = () => {
               checked={duplicateCleaner}
               onChange={(event) => setDuplicateCleaner(event.target.checked)}
             />
-            Automatic duplicate cleaner
+            Tidy up repeated words before sending
           </label>
         </div>
       </section>
 
       <section className="rounded border border-slate-800 bg-slate-900/60 p-4 text-xs">
         <h3 className="mb-2 text-sm font-semibold text-slate-200">Templates</h3>
+        <p className="mb-2 text-xs text-slate-400">Quickly fill in a complete prompt starter with a single click.</p>
         <div className="grid gap-2">
           {templates.map((template) => (
             <div key={template.id} className="flex items-center justify-between rounded border border-slate-800 bg-slate-950/60 px-3 py-2">
@@ -189,6 +197,7 @@ export const RandomizerPanel: React.FC = () => {
 
       <section className="rounded border border-slate-800 bg-slate-900/60 p-4 text-xs">
         <h3 className="mb-2 text-sm font-semibold text-slate-200">Negative presets</h3>
+        <p className="mb-2 text-xs text-slate-400">These help you avoid common issues like noise or anatomy mistakes.</p>
         <div className="grid gap-2">
           {negativePresets.map((preset) => (
             <div key={preset.id} className="flex items-center justify-between rounded border border-slate-800 bg-slate-950/60 px-3 py-2">
@@ -206,6 +215,7 @@ export const RandomizerPanel: React.FC = () => {
 
       <section className="rounded border border-slate-800 bg-slate-900/60 p-4 text-xs">
         <h3 className="mb-2 text-sm font-semibold text-slate-200">Style presets</h3>
+        <p className="mb-2 text-xs text-slate-400">Swap the overall look and feel — from painterly to comic book — instantly.</p>
         <div className="grid gap-2">
           {stylePresets.map((preset) => (
             <div key={preset.id} className="flex items-center justify-between rounded border border-slate-800 bg-slate-950/60 px-3 py-2">

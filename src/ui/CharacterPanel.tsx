@@ -49,7 +49,11 @@ export const CharacterPanel: React.FC = () => {
   return (
     <div className="flex h-full flex-col gap-4 overflow-hidden">
       <div className="rounded border border-slate-800 bg-slate-900/60 p-3">
-        <h2 className="text-sm font-semibold uppercase text-slate-300">Characters</h2>
+        <h2 className="text-sm font-semibold uppercase text-slate-300">Step 2 · Characters</h2>
+        <p className="mt-1 text-xs text-slate-400">
+          Describe each person or subject you want in the picture. A short name and a few traits (for example “Anna, red hair, smi
+          ling”) are perfect.
+        </p>
         <div className="mt-3 grid gap-3">
           {active.map((character) => (
             <article key={character.id} className="rounded border border-slate-800 bg-slate-950/60 p-3 text-xs">
@@ -109,6 +113,9 @@ export const CharacterPanel: React.FC = () => {
 
       <div className="rounded border border-slate-800 bg-slate-900/60 p-3 text-xs">
         <h3 className="text-xs font-semibold uppercase text-slate-400">Quick add</h3>
+        <p className="mt-1 text-slate-500">
+          Fill these fields and press “Add character” to drop a ready-made subject into your prompt.
+        </p>
         <div className="mt-2 grid gap-2">
           <input
             value={newLabel}
@@ -142,6 +149,9 @@ export const CharacterPanel: React.FC = () => {
 
       <div className="flex-1 overflow-y-auto rounded border border-slate-800 bg-slate-900/60 p-3">
         <h3 className="text-xs font-semibold uppercase text-slate-400">Saved profiles</h3>
+        <p className="mt-1 text-xs text-slate-500">
+          Reuse favourite characters with one click. Saving keeps their details ready for the next story.
+        </p>
         <div className="mt-2 grid gap-2">
           {profiles.map((profile) => (
             <div

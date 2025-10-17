@@ -1,0 +1,5 @@
+{
+  "positive": "textarea[aria-label*='Positive']",
+  "negative": "textarea[aria-label*='Negative']",
+  "character": "section:has-text('Character') textarea"
+}

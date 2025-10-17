@@ -1,0 +1,41 @@
+{
+  "styles": [
+    {
+      "id": "anime",
+      "name": "Anime",
+      "description": "Vivid cel-shaded look",
+      "tags": ["anime style", "vibrant colors", "clean lineart"],
+      "negative": "realistic, photographic",
+      "settings": { "sampler": "k_euler_a", "cfg": 7.5 }
+    },
+    {
+      "id": "realism",
+      "name": "Realism",
+      "description": "More photorealistic style",
+      "tags": ["realistic", "detailed lighting"],
+      "negative": "anime, cartoon",
+      "settings": { "sampler": "dpmpp_2m", "cfg": 6.5 }
+    }
+  ],
+  "negative": [
+    {
+      "id": "standard",
+      "name": "Standard Clean",
+      "text": "lowres, bad anatomy, bad hands, text, error, extra limbs, worst quality"
+    },
+    {
+      "id": "soft",
+      "name": "Soft Clean",
+      "text": "lowres, blurry, watermark, signature, extra limbs"
+    }
+  ],
+  "templates": [
+    {
+      "id": "heroine",
+      "name": "Heroine Spotlight",
+      "positive": "masterpiece, detailed background",
+      "negative": "lowres, bad anatomy",
+      "settings": { "cfg": 7, "steps": 32 }
+    }
+  ]
+}

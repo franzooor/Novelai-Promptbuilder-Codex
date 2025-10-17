@@ -30,6 +30,44 @@ const embeddedIcon = nativeImage.createFromDataURL(
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=='
 );
 
+const getErrorDetail = (error: unknown) => {
+  if (error instanceof Error) {
+    return error.stack ?? error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  try {
+    return JSON.stringify(error, null, 2);
+  } catch (serializationError) {
+    console.error('[main] Failed to serialise error detail', serializationError);
+    return undefined;
+  }
+};
+
+const logError = (message: string, error: unknown) => {
+  const detail = getErrorDetail(error) ?? String(error);
+  console.error(`[main] ${message}\n${detail}`);
+};
+
+const showErrorDialog = async (title: string, message: string, detail?: string) => {
+  if (!app.isReady()) {
+    return;
+  }
+
+  try {
+    await dialog.showMessageBox({
+      type: 'error',
+      title,
+      message,
+      detail,
+      buttons: ['OK']
+    });
+  } catch (dialogError) {
+    console.error('[main] Failed to show error dialog', dialogError);
+  }
+};
+
 const createMainWindow = async () => {
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -45,7 +83,16 @@ const createMainWindow = async () => {
   });
 
   const url = getAppUrl();
-  await mainWindow.loadURL(url);
+  try {
+    await mainWindow.loadURL(url);
+  } catch (error) {
+    logError('Failed to load main window URL', error);
+    await showErrorDialog(
+      'Unable to load application',
+      'An unexpected error occurred while loading the application window.',
+      getErrorDetail(error)
+    );
+  }
   if (isDev) {
     mainWindow.webContents.openDevTools({ mode: 'detach' }).catch(() => undefined);
   }
@@ -72,7 +119,16 @@ const createNovelAIWindow = async () => {
     }
   });
 
-  await naiWindow.loadURL('https://novelai.net/image');
+  try {
+    await naiWindow.loadURL('https://novelai.net/image');
+  } catch (error) {
+    logError('Failed to load NovelAI window', error);
+    await showErrorDialog(
+      'NovelAI window failed to load',
+      'The NovelAI window could not be loaded. Please check your internet connection or try again later.',
+      getErrorDetail(error)
+    );
+  }
   naiWindow.on('closed', () => {
     naiWindow = null;
   });
@@ -98,8 +154,23 @@ const readJson = async <T>(filePath: string, fallback: T): Promise<T> => {
 const atomicWrite = async (filePath: string, data: unknown) => {
   await ensureDir(path.dirname(filePath));
   const tempPath = `${filePath}.tmp`;
-  await fsPromises.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
-  await fsPromises.rename(tempPath, filePath);
+  try {
+    await fsPromises.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
+    await fsPromises.rename(tempPath, filePath);
+  } catch (error) {
+    logError(`Failed to persist data to ${filePath}`, error);
+    try {
+      await fsPromises.rm(tempPath, { force: true });
+    } catch (cleanupError) {
+      logError('Failed to clean up temporary storage file', cleanupError);
+    }
+    await showErrorDialog(
+      'Failed to save data',
+      'The application was unable to save data to disk. Some changes may not be preserved.',
+      getErrorDetail(error)
+    );
+    throw error;
+  }
 };
 
 const storagePath = (key: string) => path.join(dataRoot, key);
@@ -172,7 +243,14 @@ const bundleAllData = async (): Promise<PersistedBundle> => {
     'libraries/style-presets.json'
   ];
   const entries = await Promise.all(
-    keys.map(async (key) => [key, await readStorage(key)])
+    keys.map(async (key) => {
+      try {
+        return [key, await readStorage(key)] as const;
+      } catch (error) {
+        logError(`Failed to read storage key ${key}`, error);
+        throw error;
+      }
+    })
   );
   const bundle: PersistedBundle = {} as PersistedBundle;
   for (const [key, value] of entries) {
@@ -221,18 +299,36 @@ const applyBundle = async (bundle: PersistedBundle) => {
   await Promise.all(tasks);
 };
 
-app.whenReady().then(async () => {
-  nativeTheme.themeSource = 'dark';
-  await ensureDefaults();
-  await createMainWindow();
-  await createNovelAIWindow();
-
-  app.on('activate', async () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      await createMainWindow();
+app.whenReady()
+  .then(async () => {
+    nativeTheme.themeSource = 'dark';
+    try {
+      await ensureDefaults();
+    } catch (error) {
+      logError('Failed to seed default data', error);
+      await showErrorDialog(
+        'Failed to initialise storage',
+        'The application could not prepare its storage directory. Some features may not work as expected.',
+        getErrorDetail(error)
+      );
     }
+    await createMainWindow();
+    await createNovelAIWindow();
+
+    app.on('activate', async () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        await createMainWindow();
+      }
+    });
+  })
+  .catch(async (error) => {
+    logError('Application failed to start', error);
+    await showErrorDialog(
+      'Failed to start',
+      'The application encountered an unexpected error during startup.',
+      getErrorDetail(error)
+    );
   });
-});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -241,15 +337,35 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.handle('nai:inject', async (_event, payload: SendPayload) => {
-  const window = await createNovelAIWindow();
-  const script = `window.__NAI_BRIDGE.inject(${JSON.stringify(payload)})`;
-  await window.webContents.executeJavaScript(script);
+  try {
+    const window = await createNovelAIWindow();
+    const script = `window.__NAI_BRIDGE.inject(${JSON.stringify(payload)})`;
+    await window.webContents.executeJavaScript(script);
+  } catch (error) {
+    logError('Failed to inject payload into NovelAI window', error);
+    await showErrorDialog(
+      'Injection failed',
+      'The application could not communicate with the NovelAI window.',
+      getErrorDetail(error)
+    );
+    throw error;
+  }
 });
 
 ipcMain.handle('nai:focus', async () => {
-  const window = await createNovelAIWindow();
-  if (window.isMinimized()) window.restore();
-  window.focus();
+  try {
+    const window = await createNovelAIWindow();
+    if (window.isMinimized()) window.restore();
+    window.focus();
+  } catch (error) {
+    logError('Failed to focus NovelAI window', error);
+    await showErrorDialog(
+      'Unable to focus NovelAI window',
+      'The NovelAI window could not be brought to the front.',
+      getErrorDetail(error)
+    );
+    throw error;
+  }
 });
 
 ipcMain.on('nai:status', (_event, message: string) => {
@@ -257,52 +373,124 @@ ipcMain.on('nai:status', (_event, message: string) => {
 });
 
 ipcMain.handle('selectors:load', async () => {
-  const file = storagePath('config/selectors.json');
-  if (!fs.existsSync(file)) {
-    await ensureDefaults();
+  try {
+    const file = storagePath('config/selectors.json');
+    if (!fs.existsSync(file)) {
+      await ensureDefaults();
+    }
+    return await readJson<Record<string, string>>(file, {});
+  } catch (error) {
+    logError('Failed to load selectors configuration', error);
+    await showErrorDialog(
+      'Failed to load selectors',
+      'The application could not load selector settings. Default values will be used.',
+      getErrorDetail(error)
+    );
+    return {};
   }
-  return readJson<Record<string, string>>(file, {});
 });
 
-ipcMain.handle('storage:read', async (_event, key: string) => readStorage(key));
+ipcMain.handle('storage:read', async (_event, key: string) => {
+  try {
+    return await readStorage(key);
+  } catch (error) {
+    logError(`Failed to read storage key ${key}`, error);
+    await showErrorDialog(
+      'Failed to read data',
+      'The application could not read data from disk. Some information may be unavailable.',
+      getErrorDetail(error)
+    );
+    return null;
+  }
+});
+
 ipcMain.handle('storage:write', async (_event, key: string, value: unknown) => {
-  await writeStorage(key, value);
+  try {
+    await writeStorage(key, value);
+    return true;
+  } catch (error) {
+    logError(`Failed to write storage key ${key}`, error);
+    await showErrorDialog(
+      'Failed to save data',
+      'The application could not save data to disk. Please check your permissions and try again.',
+      getErrorDetail(error)
+    );
+    return false;
+  }
 });
 
 ipcMain.handle('storage:export', async () => {
-  const bundle = await bundleAllData();
-  const { canceled, filePath } = await dialog.showSaveDialog({
-    title: 'Export NovelAI Manager Data',
-    filters: [{ name: 'JSON', extensions: ['json'] }],
-    defaultPath: path.join(app.getPath('documents'), 'novelai-manager-export.json')
-  });
-  if (canceled || !filePath) return null;
-  await atomicWrite(filePath, bundle);
-  return filePath;
+  try {
+    const bundle = await bundleAllData();
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: 'Export NovelAI Manager Data',
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+      defaultPath: path.join(app.getPath('documents'), 'novelai-manager-export.json')
+    });
+    if (canceled || !filePath) return null;
+    await atomicWrite(filePath, bundle);
+    return filePath;
+  } catch (error) {
+    logError('Failed to export storage data', error);
+    await showErrorDialog(
+      'Export failed',
+      'The application could not export your data. Please try again.',
+      getErrorDetail(error)
+    );
+    return null;
+  }
 });
 
 ipcMain.handle('storage:import', async (_event, data?: string) => {
-  let bundle: PersistedBundle | null = null;
-  if (data && data.trim().length) {
-    bundle = JSON.parse(data) as PersistedBundle;
-  } else {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      title: 'Import NovelAI Manager Data',
-      filters: [{ name: 'JSON', extensions: ['json'] }],
-      properties: ['openFile']
-    });
-    if (canceled || filePaths.length === 0) return null;
-    const content = await fsPromises.readFile(filePaths[0], 'utf-8');
-    bundle = JSON.parse(content) as PersistedBundle;
+  try {
+    let bundle: PersistedBundle | null = null;
+    if (data && data.trim().length) {
+      bundle = JSON.parse(data) as PersistedBundle;
+    } else {
+      const { canceled, filePaths } = await dialog.showOpenDialog({
+        title: 'Import NovelAI Manager Data',
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+        properties: ['openFile']
+      });
+      if (canceled || filePaths.length === 0) return null;
+      const content = await fsPromises.readFile(filePaths[0], 'utf-8');
+      bundle = JSON.parse(content) as PersistedBundle;
+    }
+    if (bundle) {
+      await applyBundle(bundle);
+    }
+    return true;
+  } catch (error) {
+    logError('Failed to import storage data', error);
+    await showErrorDialog(
+      'Import failed',
+      'The selected file could not be imported. Please ensure it is a valid NovelAI export.',
+      getErrorDetail(error)
+    );
+    return false;
   }
-  if (bundle) {
-    await applyBundle(bundle);
-  }
-  return true;
 });
 
 ipcMain.handle('settings:randomize', async () => null);
 
 ipcMain.on('open-external', (_event, url: string) => {
   void shell.openExternal(url);
+});
+
+process.on('uncaughtException', async (error) => {
+  logError('Uncaught exception', error);
+  await showErrorDialog(
+    'Unexpected error',
+    'An unexpected error occurred in the application. Please restart and try again.',
+    getErrorDetail(error)
+  );
+});
+
+process.on('unhandledRejection', async (reason) => {
+  logError('Unhandled promise rejection', reason);
+  await showErrorDialog(
+    'Unexpected error',
+    'An unexpected error occurred in the application. Please restart and try again.',
+    getErrorDetail(reason)
+  );
 });

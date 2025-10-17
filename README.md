@@ -21,15 +21,21 @@ An Electron + React desktop application that streamlines prompt authoring for [N
 
 ### Installation
 
-```bash
-npm install
-```
+Run the platform-specific helper script for a one-click dependency install:
+
+- **Windows:** Double-click `scripts\\install.bat`
+- **macOS/Linux:** Execute `./scripts/install.sh`
+
+These scripts ensure Node.js and npm are available, then install all project dependencies. You can still run `npm install` manually if you prefer.
 
 ### Development
 
-```bash
-npm run dev
-```
+After installing dependencies, start the app with the new one-click launcher:
+
+- **Windows:** Double-click `scripts\\start.bat`
+- **macOS/Linux:** Execute `./scripts/start.sh`
+
+Under the hood both scripts run `npm run dev`, so you can continue using the npm script directly if desired.
 
 This runs Vite in dev mode and launches Electron with automatic reload. The main application window hosts the prompt manager UI, while a separate window loads NovelAI's image page.
 
